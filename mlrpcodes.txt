@@ -1,0 +1,514 @@
+Task 4a
+
+# The predictor vector.
+x <- c(151, 174, 138, 186, 128, 136, 179, 163, 152, 131)
+# The resposne vector.
+y <- c(63, 81, 56, 91, 47, 57, 76, 72, 62, 48)
+# Apply the lm() function.
+relation <- lm(y~x)
+# Find weight of a person with height 170.
+a <- data.frame(x = 170)
+result <-  predict(relation,a)
+print(result)
+
+
+# Plot the chart.
+plot(y,x,col = "blue",main = "Height & Weight Regression",
+     abline(lm(x~y)),cex = 1.3,pch = 16,xlab = "Weight in Kg",ylab = "Height in cm")
+
+*************************************************************************************************
+
+Task 4b
+
+# Select some columns form mtcars.
+input <- mtcars[,c("am","cyl","hp","wt")]
+print(head(input))
+
+am.data = glm(formula = am ~ cyl + hp + wt, data = input, family = binomial)
+print(summary(am.data))
+
+************************************************************************************************
+
+Task 5 
+
+library(arules)
+library(arulesViz)
+library(RColorBrewer)
+# import dataset
+data("Groceries")
+# using apriori() function
+rules <- apriori(Groceries,
+                 parameter = list(supp = 0.01, conf = 0.2))
+# using inspect() function
+inspect(rules[1:10])
+# using itemFrequencyPlot() function
+arules::itemFrequencyPlot(Groceries, topN = 20,
+                          col = brewer.pal(8, 'Pastel2'),
+                          main = 'Relative Item Frequency Plot',
+                          type = "relative",
+                          ylab = "Item Frequency (Relative)")
+
+***********************************************************************************************
+
+Task 6
+
+# Loading data
+data(iris)
+# Structure 
+str(iris)
+
+# Installing Packages
+install.packages("ClusterR")
+install.packages("cluster")
+# Loading package
+library(ClusterR)
+library(cluster)
+# Removing initial label of 
+# Species from original dataset
+iris_1 <- iris[, -5]
+# Fitting K-Means clustering Model 
+# to training dataset
+set.seed(240) # Setting seed
+kmeans.re <- kmeans(iris_1, centers = 3, nstart = 20)
+kmeans.re
+# Cluster identification for 
+# each observation
+kmeans.re$cluster
+# Confusion Matrix
+cm <- table(iris$Species, kmeans.re$cluster)
+# Model Evaluation and visualization
+
+plot(iris_1[c("Sepal.Length", "Sepal.Width")], 
+     col = kmeans.re$cluster, 
+     main = "K-means with 3 clusters")
+## Plotiing cluster centers
+kmeans.re$centers
+kmeans.re$centers[, c("Sepal.Length", "Sepal.Width")]
+# cex is font size, pch is symbol
+points(kmeans.re$centers[, c("Sepal.Length", "Sepal.Width")], 
+       col = 1:3, pch = 8, cex = 3) 
+## Visualizing clusters
+y_kmeans <- kmeans.re$cluster
+clusplot(iris_1[, c("Sepal.Length", "Sepal.Width")],
+         y_kmeans,
+         lines = 0,
+         shade = TRUE,
+         color = TRUE,
+         labels = 2,
+         plotchar = FALSE,
+         span = TRUE,
+         main = paste("Cluster iris"),
+         xlab = 'Sepal.Length',
+         ylab = 'Sepal.Width')
+
+
+
+***********************************************************************************************
+
+Task 7 
+
+#Installing libraries
+#install.packages('rpart')
+#install.packages('caret')
+#install.packages('rpart.plot')
+#install.packages('rattle')
+#install.packages("datasets")
+
+#Loading libraries
+library(rpart,quietly = TRUE)
+library(caret,quietly = TRUE)
+
+library(rpart.plot,quietly = TRUE)
+library(rattle)
+
+#Reading the data set as a dataframe
+mushrooms <- read.csv ("C:/Users/kumar/mushrooms.csv")
+mushrooms
+
+# number of rows with missing values
+nrow(mushrooms) - sum(complete.cases(mushrooms))
+
+# deleting redundant variable `veil.type`
+mushrooms$veil.type <- NULL
+
+# analyzing the odor variable
+table(mushrooms$type,mushrooms$odor)
+
+
+number.perfect.splits <- apply(X=mushrooms[-1], MARGIN = 2, FUN = function(col){
+  t <- table(mushrooms$type,col)
+  sum(t == 0)
+})
+
+# Descending order of perfect splits
+order <- order(number.perfect.splits,decreasing = TRUE)
+number.perfect.splits <- number.perfect.splits[order]
+
+# Plot graph
+par(mar=c(10,2,2,2))
+barplot(number.perfect.splits,
+        main="Number of perfect splits vs feature",
+        xlab="",ylab="Feature",las=2,col="wheat")
+
+#data splicing
+set.seed(12345)
+train <- sample(1:nrow(mushrooms),size = ceiling(0.80*nrow(mushrooms)),replace = FALSE)
+
+# training set
+mushrooms_train <- mushrooms[train,]
+# test set
+mushrooms_test <- mushrooms[-train,]
+
+# penalty matrix
+penalty.matrix <- matrix(c(0,1,10,0), byrow=TRUE, nrow=2)
+
+# building the classification tree with rpart
+tree <- rpart(type~.,
+              data=mushrooms_train,
+              parms = list(loss = penalty.matrix),
+              method = "class")
+
+# Visualize the decision tree with rpart.plot
+rpart.plot(tree, nn=TRUE)
+#Testing the model
+pred <- predict(object=tree,mushrooms_test[-1],type="class")
+#Calculating accuracy
+t <- table(mushrooms_test$class,pred)
+confusionMatrix(t)
+
+
+
+
+
+# NOtes
+#Rpart is a powerful machine learning library in R that is used for building classification and regression trees.
+#Caret is a pretty powerful machine learning library in R. With flexibility as its main feature, caret enables you to train different types of algorithms using a simple train function.
+#Rattle is a popular free and open source Graphical User Interface (GUI) for the R software, one that focuses on beginners looking to point-and-click their way through data mining tasks. 
+#
+
+
+***************************************************************************************************
+
+Task 8 
+
+# Install required packages if not already installed
+if(!require(FNN)) install.packages("FNN")
+if(!require(caret)) install.packages("caret")
+
+# Load necessary libraries
+library(FNN)  # For nearest neighbor search
+library(caret)  # For data handling
+
+# Load your dataset (replace with the correct path to your dataset)
+wine <- read.csv("C:/Users/kumar/wineQT.csv")
+
+# Check the dataset structure
+head(wine)
+
+# For simplicity, let's use the 'alcohol' and 'pH' columns for anomaly detection
+data <- wine[, c("alcohol", "pH")]
+
+# Normalize the dataset
+data_scaled <- scale(data)
+
+# Distance-based Anomaly Detection using KNN
+# k = number of nearest neighbors, let's use k = 5
+
+k <- 5
+knn_result <- get.knn(data_scaled, k = k)
+
+# Calculate the average distance to the k-nearest neighbors for each point
+distance_scores <- rowMeans(knn_result$nn.dist)
+
+# Identify the top 5 anomalies based on distance (highest distances)
+top_anomalies_distance <- order(distance_scores, decreasing = TRUE)[1:5]
+cat("Top 5 anomalies (distance-based):", top_anomalies_distance, "\n")
+
+# Plot the data with anomalies marked
+plot(data_scaled, col = "blue", pch = 20, main = "KNN Distance-based Anomaly Detection")
+points(data_scaled[top_anomalies_distance, ], col = "red", pch = 4, cex = 2)
+
+# Density-based Anomaly Detection using LOF (Local Outlier Factor)
+# LOF is based on density comparison, using the Rlof package
+if(!require(Rlof)) install.packages("Rlof")
+library(Rlof)
+
+# Calculate the LOF score for each data point
+lof_scores <- lof(data_scaled, k = k)
+
+# Identify the top 5 anomalies based on LOF scores (highest LOF values)
+top_anomalies_lof <- order(lof_scores, decreasing = TRUE)[1:5]
+cat("Top 5 anomalies (density-based - LOF):", top_anomalies_lof, "\n")
+
+# Plot the data with anomalies marked based on LOF scores
+plot(data_scaled, col = "blue", pch = 20, main = "Density-based Anomaly Detection (LOF)")
+points(data_scaled[top_anomalies_lof, ], col = "green", pch = 4, cex = 2)
+
+
+
+***************************************************************************************************
+
+
+Task 9
+
+x <- seq(-10, 10, by = .1)
+y <- dnorm(x, mean = 2.5, sd = 0.5)
+plot(x,y)
+
+
+
+x <- seq(-10,10,by = .2)
+y <- pnorm(x, mean = 2.5, sd = 2)
+plot(x,y)
+
+
+
+x <- seq(0, 1, by = 0.02)
+y <- qnorm(x, mean = 2, sd = 1)
+plot(x,y)
+
+
+y <- rnorm(50)
+hist(y, main = "Normal DIstribution")
+
+
+*****************************************************************************
+
+Task 10
+
+#------------------------------- Expectation ------------------------------
+expectation <- function(sample, p, a, b) {
+  p_expectation <- (p * dbinom(sample, 1, a)) / (p * dbinom(sample, 1, a) + (1 - p) * dbinom(sample, 1, b))
+  return(p_expectation)
+}
+
+#------------------------------- Maximization ---------------------------
+maximization <- function(sample, epart) {
+  # Estimate p
+  p_temp <- mean(epart)
+  # Estimate a and b
+  a_temp <- sum(sample * epart) / sum(epart)
+  b_temp <- sum(sample * (1 - epart)) / sum(1 - epart)
+  list(p_temp, a_temp, b_temp)
+}
+
+#-------------------- Expectation Maximization Algorithm ---------------------
+EM <- function(sample, p_inits, a_inits, b_inits, maxit = 1000, tol = 1e-6) {
+  # Estimation of initial parameters
+  flag <- 0
+  p_cur <- p_inits
+  a_cur <- a_inits
+  b_cur <- b_inits
+  
+  # Iterate between expectation and maximization steps
+  for (i in 1:maxit) {
+    cur <- c(p_cur, a_cur, b_cur)
+    new <- maximization(sample, expectation(sample, p_cur, a_cur, b_cur))
+    p_new <- new[[1]]
+    a_new <- new[[2]]
+    b_new <- new[[3]]
+    new_step <- c(p_new, a_new, b_new)
+    
+    # Stop iteration if the difference between the current and new estimates is less than the tolerance level
+    if (all(abs(cur - new_step) < tol)) {
+      flag <- 1
+      break
+    }
+    
+    # Otherwise continue iteration
+    p_cur <- p_new
+    a_cur <- a_new
+    b_cur <- b_new
+  }
+  
+  if (!flag) warning("Didn't converge\n")
+  return(list(p_cur, a_cur, b_cur))
+}
+
+#-------------------- Calculating Information Matrix ------------------------
+Info.Mat.function <- function(sample, p.est, a.est, b.est) {
+  expectation.est <- expectation(sample, p.est, a.est, b.est)
+  info.mat <- matrix(rep(0, 9), 3, 3)
+  
+  info.mat[1, 1] <- -sum(expectation.est) / (p.est^2) - sum((1 - expectation.est)) / ((1 - p.est)^2)
+  info.mat[2, 2] <- -sum(expectation.est * sample) / (a.est^2) - sum(expectation.est * (1 - sample)) / ((1 - a.est)^2)
+  info.mat[3, 3] <- -sum((1 - expectation.est) * sample) / (b.est^2) - sum((1 - expectation.est) * (1 - sample)) / ((1 - b.est)^2)
+  
+  return(-info.mat)
+}
+
+#-------------------- Now Generate Sample Data -----------------------------
+n <- 10000
+p_true <- 0.85  # Probability of using the first coin
+a_true <- 0.50  # The first coin has P(heads) = 0.50
+b_true <- 0.70  # The second coin has P(heads) = 0.70
+true <- c(p_true, a_true, b_true)
+
+# Simulate the data
+u <- ifelse(runif(n) < p_true, rbinom(n, 1, a_true), rbinom(n, 1, b_true))
+
+# Set initial parameter estimates
+p_init <- 0.70
+a_init <- 0.70
+b_init <- 0.60
+
+#-------------------- Execute EM Algorithm and Calculate Confidence Intervals ---
+output <- EM(u, p_init, a_init, b_init)
+
+# Calculate Confidence Intervals
+sd.out <- sqrt(diag(solve(Info.Mat.function(u, output[[1]], output[[2]], output[[3]]))))
+
+# Create a data frame for results
+result <- data.frame(
+  "Truth" = true, 
+  "EM Estimate" = unlist(output), 
+  "Lower CI" = unlist(output) - qnorm(0.975) * sd.out, 
+  "Upper CI" = unlist(output) + qnorm(0.975) * sd.out
+)
+
+# Print the results
+print(result)
+
+
+**************************************************************************************************
+
+Task 11
+
+# Load necessary libraries
+library(mclust)   # EM algorithm (Gaussian Mixture Model)
+library(cluster)  # For silhouette analysis
+library(factoextra) # For visualization
+library(fpc) # For ARI
+
+# Step 1: Load the dataset from a CSV file
+data <- read.csv("C:/Users/kumar/iris.csv")  # Replace with your dataset path
+
+# Step 2: Clean the data (Remove or impute NA/NaN/Inf values)
+data_clean <- na.omit(data)  # Remove rows with missing values
+# Alternatively, you can impute missing values with the column mean:
+# data_clean <- data
+# data_clean[is.na(data)] <- apply(data, 2, function(x) mean(x, na.rm = TRUE))
+
+# Ensure the data is numeric for clustering
+data_numeric <- data_clean[, sapply(data_clean, is.numeric)]
+
+
+# Step 3: Apply EM Algorithm using Mclust
+em_model <- Mclust(data_numeric)
+
+# Step 4: Apply K-means Algorithm (using number of clusters found by EM)
+k_means_model <- kmeans(data_numeric, centers = em_model$G)
+
+# Step 5: Compare the results using Adjusted Rand Index (ARI)
+ari_em_kmeans <- adjustedRandIndex(em_model$classification, k_means_model$cluster)
+cat("Adjusted Rand Index between EM and k-Means: ", ari_em_kmeans, "\n")
+
+# Step 6: Visualize the clustering results for both methods
+# EM clustering visualization
+fviz_cluster(em_model, data = data_numeric, main = "EM Algorithm Clustering")
+
+# k-Means clustering visualization
+fviz_cluster(k_means_model, data = data_numeric, main = "K-Means Clustering")
+
+# Step 7: Evaluate clustering performance using Silhouette Analysis
+# Silhouette scores for EM clustering
+sil_em <- silhouette(em_model$classification, dist(data_numeric))
+fviz_silhouette(sil_em, main = "Silhouette Plot for EM Algorithm")
+
+# Silhouette scores for k-Means clustering
+sil_kmeans <- silhouette(k_means_model$cluster, dist(data_numeric))
+fviz_silhouette(sil_kmeans, main = "Silhouette Plot for K-Means Algorithm")
+
+# Step 8: Output additional performance metrics
+# Calculate and display Within-cluster sum of squares for k-Means
+wcss_kmeans <- k_means_model$tot.withinss
+cat("Total within-cluster sum of squares for K-means: ", wcss_kmeans, "\n")
+
+# Output number of components in EM model (clusters)
+cat("Number of components in EM model: ", em_model$G, "\n")
+
+# Step 9: Return clustering results
+list(
+  "EM Clustering" = em_model$classification,
+  "K-Means Clustering" = k_means_model$cluster,
+  "Adjusted Rand Index" = ari_em_kmeans
+)
+
+
+********************************************************************************************
+
+Task 12
+
+
+# Install required libraries if not already installed
+if (!requireNamespace("bnlearn", quietly = TRUE)) {
+  install.packages("bnlearn")
+}
+if (!requireNamespace("ggm", quietly = TRUE)) {
+  install.packages("ggm")
+}
+if (!requireNamespace("dplyr", quietly = TRUE)) {
+  install.packages("dplyr")
+}
+if (!requireNamespace("readr", quietly = TRUE)) {
+  install.packages("readr")
+}
+
+# Load libraries
+library(bnlearn)
+#library(ggm)
+library(dplyr)
+library(readr)
+
+# Step 1: Load the dataset from a CSV file (replace with your actual file path)
+data <- read.csv("C:/Users/kumar/HDdataset.csv")
+
+# Inspect the first few rows of the dataset
+head(data)
+
+# Step 2: Preprocess the Data
+
+# Convert columns to factors where applicable
+data$sex <- as.factor(data$sex)
+data$cp <- as.factor(data$cp)
+data$fbs <- as.factor(data$fbs)
+data$restecg <- as.factor(data$restecg)
+data$exang <- as.factor(data$exang)
+data$slope <- as.factor(data$slope)
+data$ca <- as.factor(data$ca)
+data$thal <- as.factor(data$thal)
+data$target <- as.factor(data$target)
+
+# Discretize continuous variables into categories (convert to factor)
+data$age <- cut(data$age, breaks = c(20, 30, 40, 50, 60, 70, 80), 
+                labels = c("20-30", "30-40", "40-50", "50-60", "60-70", "70-80"),
+                include.lowest = TRUE)
+data$trestbps <- cut(data$trestbps, breaks = c(90, 110, 130, 150, 170, 190), 
+                     labels = c("90-110", "110-130", "130-150", "150-170", "170-190"),
+                     include.lowest = TRUE)
+data$chol <- cut(data$chol, breaks = c(100, 150, 200, 250, 300, 350, 400), 
+                 labels = c("100-150", "150-200", "200-250", "250-300", "300-350", "350-400"),
+                 include.lowest = TRUE)
+data$thalach <- cut(data$thalach, breaks = c(60, 100, 140, 180), 
+                    labels = c("60-100", "100-140", "140-180"),
+                    include.lowest = TRUE)
+data$oldpeak <- cut(data$oldpeak, breaks = c(-1, 1, 2, 3, 4, 5), 
+                    labels = c("0-1", "1-2", "2-3", "3-4", "4-5"),
+                    include.lowest = TRUE)
+
+# Handle missing data (if any)
+data <- na.omit(data)  # Remove rows with missing values
+
+# Step 3: Construct a Bayesian Network
+# Define the structure of the Bayesian network using the provided parameters
+bn_structure <- model2network("[age][sex][cp][trestbps][chol][fbs][restecg][thalach][exang][oldpeak][slope][ca][thal][target|age:sex:cp:trestbps:chol:fbs:restecg:thalach:exang:oldpeak:slope:ca:thal]")
+
+# Fit the Bayesian network to the data
+bn_fit <- bn.fit(bn_structure, data)
+
+# Display the learned network structure
+plot(bn_structure)
+
+# Step 4: Inference
+
+*****************************************************************************************************
